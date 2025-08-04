@@ -55,6 +55,25 @@ class AddSectionFullRequest(BaseModel):
     shunt_option_suffix: str = None
     shunt_proxy_node: str = None
 
+class DeleteSectionRequest(BaseModel):
+    smb_config: SMBConfig
+    section_type: str
+    section_name: str
+
+class UpdateSectionRequest(BaseModel):
+    smb_config: SMBConfig
+    section_type: str
+    section_name: str
+    updated_options: dict
+
+class AddNodeRequest(BaseModel):
+    smb_config: SMBConfig
+    name: str
+    remarks: str
+    address: str
+    port: str
+    password: str
+
 # ------------------- 核心类 -------------------
 class PassWallConfigManager:
     def __init__(self, server_ip: str, username: str, password: str, share_name: str, config_path: str):
@@ -143,44 +162,50 @@ async def read_config():
 '''
     测试
     curl --location 'http://127.0.0.1:8000/config/add-section' \
-    --header 'Content-Type: application/json' \
-    --data '{
-      "smb_config": {
-        "server_ip": "192.168.10.1",
-        "username": "root",
-        "password": "redao2024",
-        "share_name": "smb"
-      },
-      "section": {
-        "type": "shunt_rules",
-        "name": "fenliu_test_ssh",
-        "options": {
-          "remarks": "fenliu_test_ssh",
-          "network": "tcp,udp",
-          "source": "192.168.10.23",
-          "ip_list": "0.0.0.0/0"
-        }
-      }
-    }'
+--header 'Content-Type: application/json' \
+--data '{
+  "smb_config": {
+    "server_ip": "192.168.10.1",
+    "username": "root",
+    "password": "redao2024",
+    "share_name": "smb"
+  },
+  "section": {
+    "type": "shunt_rules",
+    "name": "fenliu_test_ssh",
+    "options": {
+      "remarks": "fenliu_test_ssh",
+      "network": "tcp,udp",
+      "source": "192.168.10.23",
+      "ip_list": "0.0.0.0/0"
+    }
+  },
+  "shunt_node_name": "'\''UbdghGyO'\''", # 这个是分流节点的名称,系统生成的,不可改不可变
+  "shunt_option_suffix": "test_ssh", # 这个就是上面options的name,去掉前缀fenliu_ , 新增的时候最好保持前缀
+  "shunt_proxy_node": "Dah2TR22" # 这个是分流的机场socks节点,可变,详情看fastapi节点新增接口
+}'
     raw
     {
-      "smb_config": {
-        "server_ip": "192.168.10.1",
-        "username": "root",
-        "password": "redao2024",
-        "share_name": "smb"
-      },
-      "section": {
-        "type": "shunt_rules",
-        "name": "fenliu_test_ssh",
-        "options": {
-          "remarks": "fenliu_test_ssh",
-          "network": "tcp,udp",
-          "source": "192.168.10.23",
-          "ip_list": "0.0.0.0/0"
-        }
-      }
+  "smb_config": {
+    "server_ip": "192.168.10.1",
+    "username": "root",
+    "password": "redao2024",
+    "share_name": "smb"
+  },
+  "section": {
+    "type": "shunt_rules",
+    "name": "fenliu_test_ssh",
+    "options": {
+      "remarks": "fenliu_test_ssh",
+      "network": "tcp,udp",
+      "source": "192.168.10.23",
+      "ip_list": "0.0.0.0/0"
     }
+  },
+  "shunt_node_name": "'UbdghGyO'",
+  "shunt_option_suffix": "test_ssh",
+  "shunt_proxy_node": "Dah2TR22"
+}
 '''
 @app.post("/config/add-section")
 async def add_section(payload: AddSectionFullRequest):
@@ -224,6 +249,181 @@ async def add_section(payload: AddSectionFullRequest):
         "section": section
     }
 
+# 删除配置段
+'''
+    测试raw
+    {
+  "smb_config": {
+    "server_ip": "192.168.10.1",
+    "username": "root",
+    "password": "redao2024",
+    "share_name": "smb"
+  },
+  "section_type": "shunt_rules",
+  "section_name": "'fenliu_test_ssh'"
+}
+'''
+@app.post("/config/delete-section")
+async def delete_section(payload: DeleteSectionRequest):
+    smb_config = payload.smb_config
+    section_type = payload.section_type
+    section_name = payload.section_name
+
+    manager = PassWallConfigManager(
+        smb_config.server_ip,
+        smb_config.username,
+        smb_config.password,
+        smb_config.share_name,
+        "/etc/config/passwall"
+    )
+
+    content = manager.read_config()
+    sections = manager.parse_config(content)
+    original_count = len(sections)
+
+    # 删除指定 section
+    sections = [
+        s for s in sections
+        if not (s["type"] == section_type and s["name"] == section_name)
+    ]
+
+    if len(sections) == original_count:
+        raise HTTPException(status_code=404, detail="未找到要删除的配置段")
+
+    new_content = manager.format_config([ConfigSection(**s) for s in sections])
+    manager.write_config(new_content)
+
+    return {
+        "success": "success",
+        "message": f"已删除 type='{section_type}' name='{section_name}' 的配置段"
+    }
+
+# 修改节点
+'''
+    测试
+    raw
+    {
+  "smb_config": {
+    "server_ip": "192.168.10.1",
+    "username": "root",
+    "password": "redao2024",
+    "share_name": "smb"
+  },
+  "section_type": "nodes",
+  "section_name": "''UbdghGyO''", # 不能变
+  "updated_options": {
+    "fenliu_test_ssh":"QQfJTX6h" # 要修改对应的规则的节点
+  }
+
+  curl --location 'http://127.0.0.1:8000/config/update-section' \
+--header 'Content-Type: application/json' \
+--data '{
+  "smb_config": {
+    "server_ip": "192.168.10.1",
+    "username": "root",
+    "password": "redao2024",
+    "share_name": "smb"
+  },
+  "section_type": "nodes",
+  "section_name": "''UbdghGyO''",
+  "updated_options": {
+    "fenliu_test_ssh":"QQfJTX6h"
+  }
+}'
+}
+'''
+@app.post("/config/update-section")
+async def update_section(payload: UpdateSectionRequest):
+    smb_config = payload.smb_config
+    section_type = payload.section_type
+    section_name = payload.section_name.strip("'\"")  # 去除多余引号
+    updated_options = payload.updated_options
+
+    manager = PassWallConfigManager(
+        smb_config.server_ip,
+        smb_config.username,
+        smb_config.password,
+        smb_config.share_name,
+        "/etc/config/passwall"
+    )
+
+    content = manager.read_config()
+    sections = manager.parse_config(content)
+
+    updated_sections = []
+    found = False
+
+    for section_dict in sections:
+        section = ConfigSection(**section_dict) if isinstance(section_dict, dict) else section_dict
+        print(f"[调试] 当前 section: {section.name}, type: {section.type},section_type: {section_type}, section_name: {section_name}")
+        if section.type == section_type and section.name == section_name:
+            logger.info(f"正在更新 section: {section.name}")
+            section.options.update(updated_options)
+            found = True
+
+        updated_sections.append(section)
+
+    if not found:
+        raise HTTPException(status_code=404, detail="未找到要修改的配置段")
+
+    new_content = manager.format_config(updated_sections)
+    manager.write_config(new_content)
+
+    return {
+        "success": "success",
+        "message": f"已更新 type='{section_type}' name='{section_name}' 的配置段",
+        "updated_options": updated_options
+    }
+
+@app.post("/config/add-node")
+async def add_node(payload: AddNodeRequest):
+    smb_config = payload.smb_config
+
+    node_section = ConfigSection(
+        type="nodes",
+        name=payload.name,
+        options={
+            "remarks": payload.remarks,
+            "type": "Xray",
+            "protocol": "trojan",
+            "address": payload.address,
+            "port": payload.port,
+            "password": payload.password,
+            "tls": "0",
+            "transport": "raw",
+            "tcp_guise": "none",
+            "tcpMptcp": "0",
+            "tcpNoDelay": "0"
+        }
+    )
+
+    manager = PassWallConfigManager(
+        smb_config.server_ip,
+        smb_config.username,
+        smb_config.password,
+        smb_config.share_name,
+        "/etc/config/passwall"
+    )
+
+    content = manager.read_config()
+    sections = manager.parse_config(content)
+    sections = [ConfigSection(**s) if isinstance(s, dict) else s for s in sections]
+
+    # 先检查是否已有同名节点，避免重复
+    for sec in sections:
+        if sec.type == "nodes" and sec.name == node_section.name:
+            raise HTTPException(status_code=400, detail=f"节点名 '{node_section.name}' 已存在")
+
+    sections.append(node_section)
+
+    new_content = manager.format_config(sections)
+    manager.write_config(new_content)
+
+    return {
+        "success": "success",
+        "message": f"节点 '{node_section.name}' 添加成功",
+        "node": node_section
+    }
 
 if __name__ == "__main__":
     import uvicorn
