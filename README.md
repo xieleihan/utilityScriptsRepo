@@ -1,5 +1,7 @@
-# pythonUtilityScripts
-Python实用脚本仓库 --开源版
+# utilityScripts
+实用脚本仓库 --开源版
+
+> 与自己在公司闭源的版本有差别,但是基本接近90%的一致性
 
 1. `Modify the engineering batch script of Openwrt's passwall plug-in.py`
 
