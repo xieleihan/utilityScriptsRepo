@@ -46,3 +46,18 @@ Python实用脚本仓库 --开源版
    > ```
    >
    > 剩下没什么难度
+
+2. `Simulate human sliding.js`
+
+   > 模拟人类滑动算法,避免人机验证导致的tk封号,有效率90%,但是并不能阻止IP原因导致的播放量过低的问题
+   >
+   > 已经导出了,直接使用
+   >
+   > ```javascript
+   > module.exports = {
+   >     randomUpForNextVideo,
+   >     randomDownForPreviousVideo
+   > }
+   > ```
+   >
+   > 
