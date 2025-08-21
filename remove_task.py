@@ -211,6 +211,7 @@ def load_data():
 
                 # 存储符合条件的taskId
                 task_ids = []
+                serial_id = []
 
                 # 遍历返回的数据
                 for item in outer_data:
@@ -226,8 +227,10 @@ def load_data():
                                 task_id = detail.get('taskId')
                                 if task_id:
                                     task_ids.append(task_id)
+                                    serial_id.append(serial)
 
                 print("符合条件的taskId数组:", task_ids)
+                print("符合条件的serial数组:", serial_id)
                 return task_ids
             else:
                 print("没有找到有效的数据")
