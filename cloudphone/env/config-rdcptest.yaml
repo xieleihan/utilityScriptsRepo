@@ -1,0 +1,9 @@
+DOCKER_API_URLS:
+    - "http://192.168.10.221:2375/containers/json"
+    - "http://192.168.10.222:2375/containers/json"
+    - "http://192.168.10.223:2375/containers/json"
+    - "http://192.168.10.224:2375/containers/json"
+    - "http://192.168.10.225:2375/containers/json"
+    - "http://192.168.10.226:2375/containers/json"
+#    - "http://192.168.10.227:2375/containers/json"
+CLASH_PROXY_IP : "http://192.168.10.11:7890"
