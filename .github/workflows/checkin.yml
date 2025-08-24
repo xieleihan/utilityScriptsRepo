@@ -1,0 +1,34 @@
+name: FastLink Daily Checkin
+
+on:
+  schedule:
+    # 每天北京时间早上 8 点运行（UTC 时间 = 北京时间 -8）
+    - cron: "0 0 * * *"
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests python-dotenv
+
+      - name: Run checkin script
+        env:
+          USEREMAIL: ${{ secrets.FASTLINK_USEREMAIL }}
+          PASSWORD: ${{ secrets.FASTLINK_PASSWORD }}
+          LOGIN_URL: ${{ secrets.FASTLINK_LOGIN_URL }}
+          CHECKOUT_URL: ${{ secrets.FASTLINK_CHECKOUT_URL }}
+        run: |
+          python fastlinkcheck.py
