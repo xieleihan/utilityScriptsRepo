@@ -35,6 +35,7 @@ response = session.post(
     # verify=False  # 仅用于测试，生产环境建议使用真实证书
 )
 
+print("登录响应状态码:", response.status_code)
 if response.status_code == 200:
     print("登录成功😊")
     try:
