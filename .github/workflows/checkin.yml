@@ -30,5 +30,6 @@ jobs:
           PASSWORD: ${{ secrets.FASTLINK_PASSWORD }}
           LOGIN_URL: ${{ secrets.FASTLINK_LOGIN_URL }}
           CHECKOUT_URL: ${{ secrets.FASTLINK_CHECKOUT_URL }}
+          LOGOUT_URL : ${{ secrets.FASTLINK_LOGOUT_URL }}
         run: |
           python fastlinkcheck.py
