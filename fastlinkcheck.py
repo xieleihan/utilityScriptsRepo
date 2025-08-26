@@ -43,11 +43,11 @@ if response.status_code == 200:
                                     headers={'User-Agent': headers['User-Agent'], 'Accept': headers['Accept']})
 
         print("Checkin response:", resp_checkin.text)
-        parsed = json.loads(resp_checkin.text)
-        if parsed.get("ret") == 1:
-            print("✅ 签到成功:", parsed.get("msg"))
-        else:
-            print("❌ 签到失败:", parsed.get("msg"))
+        # parsed = json.loads(resp_checkin.text)
+        # if parsed.get("ret") == 1:
+        #     print("✅ 签到成功:", parsed.get("msg"))
+        # else:
+        #     print("❌ 签到失败:", parsed.get("msg"))
         print("运行退出登录")
         try:
             resp_logout = session.post(logout_url,
