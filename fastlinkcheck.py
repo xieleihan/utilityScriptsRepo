@@ -42,16 +42,18 @@ if response.status_code == 200:
         data = session.cookies.get_dict()
         resp_checkin = session.post(checkout_url,
                                     headers={'User-Agent': headers['User-Agent'], 'Accept': headers['Accept']})
-
-        print("Checkin response:", resp_checkin.text)
         parsed = json.loads(resp_checkin.text)
         if parsed.get("ret") == 1:
             print("✅ 签到成功:", parsed.get("msg"))
         else:
             print("❌ 签到失败:", parsed.get("msg"))
         print("运行退出登录")
-        resp_logout = session.post(logout_url,
-                                   headers={'User-Agent': headers['User-Agent'], 'Accept': headers['Accept']})
+        try:
+            resp_logout = session.post(logout_url,
+                                       headers={'User-Agent': headers['User-Agent'], 'Accept': headers['Accept']})
+        except Exception as e:
+            print("退出登录请求失败:", str(e))
+
 
     except requests.exceptions.JSONDecodeError:
         sys.exit(1)
