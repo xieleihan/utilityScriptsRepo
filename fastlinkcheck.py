@@ -1,8 +1,7 @@
-import json
-
 import requests
 import os
 import sys
+import json
 
 from dotenv import load_dotenv
 
@@ -37,6 +36,7 @@ response = session.post(
 )
 
 if response.status_code == 200:
+    print("登录成功😊")
     try:
         data = session.cookies.get_dict()
         resp_checkin = session.post(checkout_url,
@@ -45,9 +45,9 @@ if response.status_code == 200:
         print("Checkin response:", resp_checkin.text)
         parsed = json.loads(resp_checkin.text)
         if parsed.get("ret") == 1:
-            print("签到成功:", parsed.get("msg"))
+            print("✅ 签到成功:", parsed.get("msg"))
         else:
-            print("签到失败:", parsed.get("msg"))
+            print("❌ 签到失败:", parsed.get("msg"))
         print("运行退出登录")
         try:
             resp_logout = session.post(logout_url,
