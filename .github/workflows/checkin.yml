@@ -31,5 +31,9 @@ jobs:
           LOGIN_URL: ${{ secrets.FASTLINK_LOGIN_URL }}
           CHECKOUT_URL: ${{ secrets.FASTLINK_CHECKOUT_URL }}
           LOGOUT_URL : ${{ secrets.FASTLINK_LOGOUT_URL }}
+          IKUUU_PASSWORD: ${{ secrets.IKUUU_PASSWORD }}
+          IKUUU_LOGIN_URL: ${{ secrets.IKUUU_LOGIN_URL }}
+          IKUUU_CHECKOUT_URL: ${{ secrets.IKUUU_CHECKOUT_URL }}
+          IKUUU_LOGOUT_URL: ${{ secrets.IKUUU_LOGOUT_URL }}
         run: |
           python fastlinkcheck.py
