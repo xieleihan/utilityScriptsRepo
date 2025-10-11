@@ -46,11 +46,11 @@ if response.status_code == 200:
         data = session.cookies.get_dict()
         resp_checkin = session.post(checkout_url,
                                     headers={'User-Agent': headers['User-Agent'], 'Accept': headers['Accept']})
-        parsed = json.loads(resp_checkin.text)
-        if parsed.get("ret") == 1:
-            print("✅ Fastlink签到成功:", parsed.get("msg"))
-        else:
-            print("❌ Fastlink签到失败:", parsed.get("msg"))
+        # parsed = json.loads(resp_checkin.text)
+        # if parsed.get("ret") == 1:
+        #     print("✅ Fastlink签到成功:", parsed.get("msg"))
+        # else:
+        #     print("❌ Fastlink签到失败:", parsed.get("msg"))
         print("Fastlink运行退出登录")
         try:
             resp_logout = session.post(logout_url,
